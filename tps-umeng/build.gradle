@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    id 'maven-publish'
 }
 
 android {
@@ -26,6 +27,36 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+}
+
+def umeng = rootProject.ext.kitx.umeng
+group = "${rootProject.ext.github}"
+version = "${umeng.version}"
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = "${rootProject.ext.lib}"
+                artifactId = "${umeng.name}"
+                version = "${umeng.version}"
+            }
+        }
+    }
+}
+task generateSourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier 'sources'
+}
+
+task androidJavadocs(type: Javadoc) {
+    allprojects {
+        tasks.withType(Javadoc) {
+            options.addStringOption('Xdoclint:none',  '-quiet')  //忽略javadoc错误
+            options.encoding = "UTF-8"
+        }
     }
 }
 
