@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="cn.ymex.kitx.tps.umeng">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <application>
+        <!-- 魅族 start-->
+        <!--push应用定义消息receiver声明 -->
+        <receiver
+            android:name=".mfr.MeizuMessageReceiver"
+            android:exported="true">
+            <intent-filter>
+                <!-- 接收push消息 -->
+                <action android:name="com.meizu.flyme.push.intent.MESSAGE" />
+                <!-- 接收register消息 -->
+                <action android:name="com.meizu.flyme.push.intent.REGISTER.FEEDBACK" />
+                <!-- 接收unregister消息-->
+                <action android:name="com.meizu.flyme.push.intent.UNREGISTER.FEEDBACK" />
+                <!-- 兼容低版本Flyme3推送服务配置 -->
+                <action android:name="com.meizu.c2dm.intent.REGISTRATION" />
+                <action android:name="com.meizu.c2dm.intent.RECEIVE" />
+
+                <category android:name="${applicationId}" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name=".mfr.PushHoldActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="${applicationId}"
+                    android:path="/thirdpush"
+                    android:scheme="agoo" />
+            </intent-filter>
+        </activity>
+
+
+        <!-- VIVO厂商通道 android:value="此处改为VIVO后台真实参数"-->
+        <meta-data
+            android:name="com.vivo.push.api_key"
+            android:value="1b5ce9f6-8304-4afc-b739-0e07fb22775e" />
+        <meta-data
+            android:name="com.vivo.push.app_id"
+            android:value="17979" />
+
+        <!-- HUAWEI厂商通道  android:value="appid=此处改为HUAWEI后台真实参数"-->
+        <meta-data
+            android:name="com.huawei.hms.client.appid"
+            android:value="appid=100429257" />
+
+        <!-- Honor厂商通道  android:value="此处改为荣耀后台真实参数"-->
+        <meta-data
+            android:name="com.hihonor.push.app_id"
+            android:value="220671410" />
+
+
+        <!-- 厂商通道 Android 12 兼容 Start -->
+        <service
+            android:name="com.heytap.msp.push.service.DataMessageCallbackService"
+            android:exported="true" />
+        <service
+            android:name="com.heytap.msp.push.service.CompatibleDataMessageCallbackService"
+            android:exported="true" />
+        <service
+            android:name="com.xiaomi.mipush.sdk.MessageHandleService"
+            android:exported="false" />
+        <service
+            android:name="com.xiaomi.push.service.XMPushService"
+            android:exported="false" />
+
+        <receiver
+            android:name="org.android.agoo.vivo.PushMessageReceiverImpl"
+            android:exported="false" />
+        <!-- 厂商通道 Android 12 兼容 End -->
+    </application>
+</manifest>
