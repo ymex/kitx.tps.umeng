@@ -30,6 +30,7 @@ class UmengManager {
     private lateinit var pushAgent: PushAgent
     private val pushConfigs = arrayListOf<PushConfig>()
     private var debugPush = true
+    private var mDeviceToken = ""
 
 
     //消息处理
@@ -50,32 +51,39 @@ class UmengManager {
             UmengManager()
         }
 
-        fun init(context: Application){
+        fun init(context: Application) {
             instance.init(context)
         }
 
-        fun initPush(config: UmengConfig, vararg pushConfigs: PushConfig){
+        fun initPush(config: UmengConfig, vararg pushConfigs: PushConfig) {
             instance.initPush(config, * pushConfigs)
         }
 
-        fun initPush(){
+        fun initPush() {
             instance.initPush()
         }
 
-        fun setAgreePrivacyAgreement(value: Boolean){
+        fun setAgreePrivacyAgreement(value: Boolean) {
             instance.setAgreePrivacyAgreement(value)
         }
 
-        fun hasAgreePrivacyAgreement():Boolean{
+        fun hasAgreePrivacyAgreement(): Boolean {
             return instance.hasAgreePrivacyAgreement()
         }
 
-        fun isMainProcess(context: Context?):Boolean{
+        fun isMainProcess(context: Context?): Boolean {
             return instance.isMainProcess(context)
+        }
+
+        /**
+         * 设备token
+         */
+        fun deviceToken(): String {
+            return instance.mDeviceToken
         }
     }
 
-    private fun init(context: Application):UmengManager{
+    private fun init(context: Application): UmengManager {
         this.context = context
         preferences = context.getSharedPreferences(NAME, Context.MODE_PRIVATE)
         return this
@@ -108,7 +116,7 @@ class UmengManager {
     private fun initPush(
         config: UmengConfig,
         vararg pushConfigs: PushConfig
-    ){
+    ) {
         this.debugPush = config.debug
         this.config = config
         this.pushConfigs.clear()
@@ -125,13 +133,12 @@ class UmengManager {
             e.printStackTrace()
         }
         UMConfigure.preInit(context, config.key, config.channel)
-        if (hasAgreePrivacyAgreement()){
-            if (isMainProcess(context)){
+        if (hasAgreePrivacyAgreement()) {
+            if (isMainProcess(context)) {
                 initPush()
             }
         }
     }
-
 
 
     /**
@@ -141,7 +148,7 @@ class UmengManager {
      * @param pushConfigs 厂商通道的配置
      * 注意： 在要主进程中初始化
      */
-     private fun initPush() {
+    private fun initPush() {
         UMConfigure.init(
             context,
             config.key,//应用申请的Appkey
@@ -189,16 +196,15 @@ class UmengManager {
                 super.dealWithCustomAction(context, message)
             }
         }
-
         //注册推送服务，每次调用register方法都会回调该接口
         pushAgent.register(object : UPushRegisterCallback {
             override fun onSuccess(deviceToken: String) {
+                mDeviceToken = deviceToken
                 registerCallback(true, deviceToken)
             }
 
             override fun onFailure(p0: String, p1: String) {
                 registerCallback(false, "$p0,$p1")
-
             }
         })
 
@@ -210,7 +216,7 @@ class UmengManager {
                 when (it.brand) {
                     //小米通道，填写您在小米后台APP对应的xiaomi id和key
                     PushBrand.XIAOMI -> {
-                        MiPushRegistar.register(context, it.id, it.key,false)
+                        MiPushRegistar.register(context, it.id, it.key, false)
                     }
                     //华为，注意华为通道的初始化参数在minifest中配置
                     PushBrand.HUAWEI -> {
@@ -229,7 +235,7 @@ class UmengManager {
                         VivoRegister.register(context)
                     }
                     //荣耀，初始化参数在minifest中配置
-                    PushBrand.HONOR ->{
+                    PushBrand.HONOR -> {
                         HonorRegister.register(context)
                     }
                 }
@@ -381,7 +387,6 @@ class UmengManager {
         }
         return false
     }
-
 
 
     interface MessageHandler {
