@@ -6,6 +6,7 @@ import android.app.Notification
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Process
+import android.util.Log
 import com.taobao.accs.ACCSClient
 import com.taobao.accs.AccsClientConfig
 import com.taobao.agoo.TaobaoRegister
@@ -31,6 +32,7 @@ class UmengManager {
     private val pushConfigs = arrayListOf<PushConfig>()
     private var debugPush = true
     private var mDeviceToken = ""
+    private var mOaid = ""
 
 
     //消息处理
@@ -81,7 +83,40 @@ class UmengManager {
         fun deviceToken(): String {
             return instance.mDeviceToken
         }
+
+        fun oaid(callback:( String)->Unit){
+            instance.oaid(callback)
+        }
+
+
+        fun reportEvent(eventName:String,message: String){
+            instance.reportEvent(eventName, message)
+        }
+        fun reportError(throwable: Throwable){
+           instance.reportError(throwable)
+        }
+
+        fun reportError(throwable: String){
+            instance.reportError(throwable)
+        }
     }
+
+    //统计相关------开始
+
+    private fun reportEvent(eventName:String,message: String){
+        MobclickAgent.onEvent(context, eventName, message)
+    }
+
+    private fun reportError(throwable: Throwable) {
+        MobclickAgent.reportError(context,throwable)
+    }
+
+    private fun reportError(throwable: String) {
+        MobclickAgent.reportError(context,throwable)
+    }
+
+    //统计相关------结束
+
 
     private fun init(context: Application): UmengManager {
         this.context = context
@@ -158,6 +193,9 @@ class UmengManager {
             UMConfigure.DEVICE_TYPE_PHONE,
             config.messageSecret//Push推送业务的secret 填充Umeng Message Secret对应信息
         )
+
+        // 支持在子进程中统计自定义事件
+        UMConfigure.setProcessEvent(true);
 
         //toast 日志
         UMConfigure.setLogEnabled(this.debugPush)
@@ -252,6 +290,22 @@ class UmengManager {
      */
     private fun isMainProcess(context: Context?): Boolean {
         return UMUtils.isMainProgress(context)
+    }
+
+    private fun baseContext():Context{
+        return context
+    }
+
+    /**
+     *友盟+自带oaid模块和三方oaid库不会发生包名冲突，开发者可同时集成两者。
+     * 开发者可以通过如下api获得oaid：
+     */
+    private fun oaid(callback:( String)->Unit){
+        UMConfigure.getOaid(
+            baseContext()
+        ) { oaid ->
+            callback(oaid)
+        }
     }
 
     private fun shouldInit(context: Application): Boolean {
@@ -373,6 +427,8 @@ class UmengManager {
             }
         })
     }
+
+
 
 
     private fun shouldInit(context: Context): Boolean {

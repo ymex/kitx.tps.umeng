@@ -16,8 +16,8 @@ class MainActivity : AppCompatActivity() {
         super.onPostCreate(savedInstanceState)
         if (!UmengManager.hasAgreePrivacyAgreement()){
             showAgreementDialog()
-        }
 
+        }
 
     }
 
